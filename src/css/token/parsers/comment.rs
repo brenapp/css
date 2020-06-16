@@ -44,7 +44,7 @@ pub fn parse(points: &mut Peekable<Chars>, position: &mut i32) -> ParseResult {
         // If we've reach the end of the iterator return a parse error
         Err(ParseError {
             token: Some(CSSToken::Comment),
-            error_text: "Unexpected End Of File (EOF) when parsing comment body",
+            error_text: "Unexpected End Of File (EOF)",
             at: *position,
         })
     } else {
