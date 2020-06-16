@@ -1,10 +1,9 @@
-# Minify
+# Minify CSS
 
-Minifies CSS and HTML quickly.
+An easy-to-follow CSS parser and minifier written in rust.
 
 ```
-$ minify index.html
-$ minify main.css
+minify main.css
 ```
 
-> Note: This project was made for education. Is is not designed to be feature complete! Please don't use this in production!
+> Please note: This project was made to help me learn rust. While I did my best to follow the parsing spec, there is no gaurentee of spec compliance. There are no compliance or regression tests. If you need something like this for real uses, I would reccomend you use [Servo's CSS Parser](https://github.com/servo/rust-cssparser/)
