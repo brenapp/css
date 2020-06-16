@@ -1,5 +1,6 @@
 // Parsers
 pub mod comment;
+pub mod string;
 pub mod whitespace;
 
 use super::error::ParseError;
@@ -9,6 +10,9 @@ use std::iter::Peekable;
 use std::str::Chars;
 
 type ParseResult = Result<Option<CSSToken>, ParseError>;
+
+// Macro to consume an iterator and increment the position
+// TODO
 
 // Looks ahead for some chars returns true if they are there and false otherwise
 pub fn lookahead(iter: &mut Peekable<Chars>, chars: &[char]) -> bool {
@@ -57,6 +61,15 @@ pub fn parse(iter: &mut Peekable<Chars>, position: &mut i32) -> Result<CSSToken,
 
     // Whitespace
     match whitespace::parse(iter, position) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // String Token
+    match string::parse(iter, position) {
         Err(e) => return Err(e),
         Ok(result) => match result {
             Some(token) => return Ok(token),
