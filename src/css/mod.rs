@@ -7,5 +7,8 @@ pub fn optimize(contents: String) -> Result<String, token::error::ParseError> {
         Err(e) => return Err(e),
     };
 
+    println!("{:?}", tokens);
+
+
     Ok(String::new())
 }
