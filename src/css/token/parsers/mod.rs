@@ -1,4 +1,6 @@
+// Parsers
 pub mod comment;
+pub mod whitespace;
 
 use super::error::ParseError;
 use super::tokens::CSSToken;
@@ -43,11 +45,6 @@ pub fn lookahead(iter: &mut Peekable<Chars>, chars: &[char]) -> bool {
  * Goes through all the parsers to parse the iterator at that point
  */
 pub fn parse(iter: &mut Peekable<Chars>, position: &mut i32) -> Result<CSSToken, ParseError> {
-    // Check to see if we're at the end
-    if iter.peek().is_none() {
-        return Ok(CSSToken::EOF);
-    }
-
     // Match Parsers
     // Comment
     match comment::parse(iter, position) {
@@ -57,6 +54,20 @@ pub fn parse(iter: &mut Peekable<Chars>, position: &mut i32) -> Result<CSSToken,
             None => (),
         },
     };
+
+    // Whitespace
+    match whitespace::parse(iter, position) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Check to see if we're at the end
+    if iter.peek().is_none() {
+        return Ok(CSSToken::EOF);
+    }
 
     // If none of the parse errors matched, then we have a parse error
     Err(ParseError {
