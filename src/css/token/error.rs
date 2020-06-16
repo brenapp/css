@@ -13,6 +13,14 @@ pub struct ParseError {
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} at position {} when parsing attempting to parse {:?}", self.error_text, self.at, self.token)
+        if self.token.is_some() {
+            write!(
+                f,
+                "{} at position {} when parsing attempting to parse {:?}",
+                self.error_text, self.at, self.token
+            )
+        } else {
+            write!(f, "{} at position {}", self.error_text, self.at)
+        }
     }
 }
