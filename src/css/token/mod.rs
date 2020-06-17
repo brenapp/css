@@ -2,6 +2,9 @@ pub mod error;
 pub mod parsers;
 pub mod tokens;
 
+pub mod check;
+pub mod consume;
+
 use tokens::CSSToken;
 
 /**
