@@ -1,6 +1,7 @@
 // Parsers
 pub mod comment;
 pub mod hash;
+pub mod lt;
 pub mod minus;
 pub mod period;
 pub mod plus;
@@ -144,6 +145,33 @@ pub fn parse(iter: &mut Peekable<Chars>, position: &mut i32) -> Result<CSSToken,
 
     // Full Stop
     match period::parse(iter, position) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Colon
+    match single_char::parse(iter, position, ':', CSSToken::Colon) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Semicolon
+    match single_char::parse(iter, position, ';', CSSToken::Semicolon) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Less than <
+    match lt::parse(iter, position) {
         Err(e) => return Err(e),
         Ok(result) => match result {
             Some(token) => return Ok(token),
