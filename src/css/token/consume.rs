@@ -5,8 +5,8 @@ use std::iter::Peekable;
 use std::str::Chars;
 
 use super::check::{
-    equal, is_identifier, is_name_code_point, is_surrogate, is_valid_escape, next_char_equals,
-    MAX_CODE_POINT,
+    equal, is_identifier, is_name_code_point, is_nonprintable, is_surrogate, is_valid_escape,
+    is_whitespace, next_char_equals, MAX_CODE_POINT,
 };
 use super::error::ParseError;
 use super::tokens::{CSSToken, NumericFlag};
@@ -352,4 +352,199 @@ pub fn numeric_token(
             }
         }
     }
+}
+
+// "Consume as much whitespace as possible"
+pub fn whitespace(points: &mut Peekable<Chars>, position: &mut i32) {
+    let mut peek = points.peek();
+
+    // Consume as much whitespace as possible
+    while peek.is_some() && is_whitespace(peek.unwrap()) {
+        *position += 1;
+        points.next();
+        peek = points.peek();
+    }
+}
+
+// 4.3.14. Consume the remnants of a bad url
+pub fn bad_url_remnant(points: &mut Peekable<Chars>, position: &mut i32) {
+    loop {
+        *position += 1;
+        let next = points.next();
+
+        loop {
+            match next {
+                None => break,
+                Some(ch) => {
+                    if ch == ')' {
+                        break;
+                    } else if is_valid_escape(points) {
+                        let _ = escape(points, position);
+                    }
+                }
+            };
+        }
+    }
+}
+
+pub fn url_token(points: &mut Peekable<Chars>, position: &mut i32) -> Result<CSSToken, ParseError> {
+    let mut string = String::new();
+
+    // Consume as much whitespace as possible
+    whitespace(points, position);
+
+    // Repeatedly consume the next input
+    loop {
+        let next = points.next();
+
+        match next {
+            Some(ch) => {
+                // If it's whitespace, consume as much whitespace as possible
+                if is_whitespace(&ch) {
+                    whitespace(points, position);
+
+                    // If the next input code point is U+0029 RIGHT PARENTHESIS ()) or EOF, consume it and return the <url-token>
+                    let next = points.peek();
+
+                    if next.is_none() {
+                        // Consume it
+                        *position += 1;
+                        points.next();
+
+                        return Err(ParseError {
+                            token: Some(CSSToken::URL(string)),
+                            at: *position,
+                            error_text: "Unexpected End of File (EOF)",
+                        });
+                    }
+
+                    // If it's ) then return the URL token, else return the BadURL token
+                    let ch = next.unwrap();
+                    if equal(ch, &')') {
+                        // Consume then )
+                        *position += 1;
+                        points.next();
+
+                        return Ok(CSSToken::URL(string));
+                    // We are now in a bad URL
+                    } else {
+                        bad_url_remnant(points, position);
+                        return Ok(CSSToken::BadURL);
+                    }
+
+                // These characters indicate bad URL
+                } else if ch == '"' || ch == '\'' || ch == '(' || is_nonprintable(&ch) {
+                    bad_url_remnant(points, position);
+                    return Ok(CSSToken::BadURL);
+
+                // For \, check if it's a valid escape, and if so, use it
+                // Otherwise it's a BadDURL
+                } else if ch == '\\' {
+                    // Check if it's a valid escape
+                    if is_valid_escape(points) {
+                        match escape(points, position) {
+                            Ok(ch) => string.push(ch),
+                            Err(e) => return Err(e),
+                        }
+                    } else {
+                        bad_url_remnant(points, position);
+                        return Ok(CSSToken::BadURL);
+                    }
+
+                // Append anything else
+                } else {
+                    string.push(ch);
+                }
+            }
+            // Handle EOF
+            None => {
+                return Err(ParseError {
+                    token: Some(CSSToken::URL(string)),
+                    at: *position,
+                    error_text: "Unexpected End of File (EOF)",
+                })
+            }
+        }
+    }
+}
+
+// 4.3.4. Consume an ident-like token
+pub fn ident_like_token(
+    points: &mut Peekable<Chars>,
+    position: &mut i32,
+) -> Result<CSSToken, ParseError> {
+    let string = match name(points, position) {
+        Ok(s) => s,
+        Err(e) => return Err(e),
+    };
+
+    // If string’s value is an ASCII case-insensitive match for "url", and the next input code point is U+0028 LEFT PARENTHESIS ((), consume it.
+    if string.to_ascii_lowercase() == String::from("url") && next_char_equals(points, &'(') {
+        *position += 1;
+        points.next();
+
+        // While the next two characters are whitespace, consume characters
+        loop {
+            // @TODO OPTIMIZE THIS
+            // CLONING THE ITERATOR ON EVERY LOOP IS AWFUL
+            // BUT ITERTOOLS MULTIPEEK FUCKS UP EVERYTHING
+            let mut lookahead = points.clone();
+            let first = lookahead.next();
+
+            // If the first char is not whitespace
+            if first.is_none() || !is_whitespace(&first.unwrap()) {
+                break;
+            }
+
+            let second = lookahead.next();
+
+            // If the second char is not whitespace
+            if second.is_none() || !is_whitespace(&second.unwrap()) {
+                break;
+            }
+
+            // Consume the code point
+            points.next();
+        }
+
+        // If the next one or two input code points are
+        // U+0022 QUOTATION MARK ("),
+        // U+0027 APOSTROPHE ('), or
+        // whitespace followed by U+0022 QUOTATION MARK (") or U+0027 APOSTROPHE ('),
+        // then create a <function-token> with its value set to string and return it.
+
+        // If the next char is whitespace
+        let peek = points.peek();
+
+        // Check if the next fchar is " or '
+        if peek.is_some() && (equal(peek.unwrap(), &'"') || equal(peek.unwrap(), &'\'')) {
+            return Ok(CSSToken::Function(string));
+        } else if peek.is_some() && is_whitespace(peek.unwrap()) {
+            let mut points = points.clone();
+            let next = points.next();
+
+            // Then we gotta check if the next character after that is ' or "
+            match next {
+                Some(c) => {
+                    if c == '\'' || c == '"' {
+                        return Ok(CSSToken::Function(string));
+                    }
+                }
+                None => {}
+            };
+        // Otherwise, consume a url token, and return it.
+        } else {
+            return url_token(points, position);
+        }
+    }
+
+    // Otherwise, if the next input code point is U+0028 LEFT PARENTHESIS ((), consume it
+    if next_char_equals(points, &'(') {
+        *position += 1;
+        points.next();
+
+        return Ok(CSSToken::Function(string));
+    }
+
+    Ok(CSSToken::Ident(string))
 }
