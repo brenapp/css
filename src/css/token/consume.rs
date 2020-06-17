@@ -341,6 +341,10 @@ pub fn numeric_token(
                 }
             // If the next char is a % then it's a percentage
             } else if next_char_equals(points, &'%') {
+                // Consume the %
+                *position += 1;
+                points.next();
+
                 Ok(CSSToken::Percentage(number))
             // Otherwise it's a number
             } else {
