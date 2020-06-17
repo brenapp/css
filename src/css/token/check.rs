@@ -184,3 +184,14 @@ pub const MAX_CODE_POINT: u32 = 0x10FFFF;
 pub fn is_surrogate(num: u32) -> bool {
     0xD800 <= num && num <= 0xDFFF
 }
+
+pub fn is_whitespace(ch: &char) -> bool {
+    // U+000A LINE FEED
+    ch.partial_cmp(&'\n') == Some(Ordering::Equal) || 
+    
+    // U+0009 CHARACTER TABULATION
+    ch.partial_cmp(&' ') == Some(Ordering::Equal) ||
+
+    // U+0020 SPACE
+    ch.partial_cmp(&' ') == Some(Ordering::Equal)
+}
