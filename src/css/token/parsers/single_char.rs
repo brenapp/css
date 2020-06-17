@@ -10,12 +10,12 @@ use std::str::Chars;
 pub fn parse(
     points: &mut Peekable<Chars>,
     position: &mut i32,
-    ch: char,
+    cmp: char,
     token: CSSToken,
 ) -> ParseResult {
     if let Some(ch) = points.peek() {
         // Match for char
-        if ch.partial_cmp(&ch) == Some(Ordering::Equal) {
+        if ch.partial_cmp(&cmp) == Some(Ordering::Equal) {
             // Consume the token
             *position += 1;
             points.next();
