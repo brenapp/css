@@ -229,9 +229,11 @@ pub fn number(
     let mut flag = NumericFlag::Integer;
     let mut repr = String::new();
 
-    if let Some(ch) = points.next() {
+    if let Some(ch) = points.peek() {
         // If there is a sign preceeding the number, add it to the string
-        if ch == '+' || ch == '-' {
+        if equal(ch, &'+') || equal(ch, &'-') {
+            *position += 1;
+            let ch = points.next().unwrap();
             repr.push(ch);
         }
 
