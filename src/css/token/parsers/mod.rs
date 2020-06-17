@@ -1,6 +1,7 @@
 // Parsers
 pub mod comment;
 pub mod hash;
+pub mod paren;
 pub mod string;
 pub mod whitespace;
 
@@ -80,6 +81,24 @@ pub fn parse(iter: &mut Peekable<Chars>, position: &mut i32) -> Result<CSSToken,
 
     // NUMBER SIGN (#)
     match hash::parse(iter, position) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // String Token (Single Quotes)
+    match string::parse(iter, position, '\'') {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Paren ( and )
+    match paren::parse(iter, position) {
         Err(e) => return Err(e),
         Ok(result) => match result {
             Some(token) => return Ok(token),
