@@ -1,7 +1,7 @@
 // Parsers
 pub mod comment;
 pub mod hash;
-pub mod paren;
+pub mod single_char;
 pub mod string;
 pub mod whitespace;
 
@@ -97,14 +97,25 @@ pub fn parse(iter: &mut Peekable<Chars>, position: &mut i32) -> Result<CSSToken,
         },
     };
 
-    // Paren ( and )
-    match paren::parse(iter, position) {
+    // Left Paren
+    match single_char::parse(iter, position, '(', CSSToken::LeftParentheses) {
         Err(e) => return Err(e),
         Ok(result) => match result {
             Some(token) => return Ok(token),
             None => (),
         },
     };
+
+    // Right Paren
+    match single_char::parse(iter, position, ')', CSSToken::RightParentheses) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Plus symbol
 
     // Check to see if we're at the end
     if iter.peek().is_none() {
