@@ -1,0 +1,380 @@
+body,
+html {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  color: var(--gray-1);
+  background-color: var(--gray-3);
+  height: 100%;
+  min-height: 100vh;
+}
+
+#root {
+  height: 100%;
+}
+
+:root {
+  --green-1: #16a085;
+  --green-2: #1abc9c;
+  --purple-1: #786fa6;
+  --purple-2: #9b59b6;
+  --gray-1: #4f4f4f;
+  --gray-2: #979797;
+  --gray-3: #efefef;
+  --red-1: #ff7979;
+  --white: #fff;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.App-Header {
+  position: absolute;
+  height: 18px;
+  background: var(--gray-1);
+  top: +0;
+  left: +0;
+  width: 100vw;
+  height: 18px;
+}
+
+.App-Header.big {
+  height: 8vh;
+  display: flex;
+  color: #fff;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.App-Header.big p {
+  margin: 0 16px;
+}
+
+.viewport {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+}
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+main.game {
+  padding-top: 10vh;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  height: 80vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+footer .angled1 {
+  position: absolute;
+  height: 50vh;
+  width: 180vw;
+  background-color: var(--green-1);
+  bottom: -30vh;
+  left: -20vh;
+  transform: rotate(20deg);
+  z-index: 1;
+}
+
+footer .angled2 {
+  position: absolute;
+  height: 40vh;
+  width: 130vw;
+  background-color: var(--purple-1);
+  bottom: -20vh;
+  left: 0;
+  transform: rotate(-20deg);
+}
+
+footer .bottom {
+  position: absolute;
+  height: 30vw;
+  width: 70vw;
+  background-color: var(--green-1);
+  bottom: -30vh;
+  left: 0;
+}
+
+@media (max-height: 600px) {
+  footer {
+    display: none;
+  }
+}
+
+/** Utility **/
+h1.title {
+  margin-top: 64px;
+  text-align: center;
+  font-weight: 400;
+  font-size: 3.5rem;
+}
+
+h3.subtitle {
+  text-transform: uppercase;
+  padding: 0;
+  margin: 0;
+  margin-bottom: -8px;
+  font-weight: lighter;
+}
+
+div.toast {
+  position: fixed;
+  top: 5vh;
+  width: 100%;
+  left: 0;
+  text-align: center;
+}
+
+div.toast span {
+  padding: 8px 16px;
+  background: var(--white);
+  border-radius: 8px;
+}
+
+div.toast span.error {
+  background: var(--red-1);
+}
+
+p.green,
+span.green {
+  color: var(--green-1);
+}
+
+p.purple,
+span.purple {
+  color: var(--purple-1);
+}
+
+p.white,
+span.white {
+  color: var(--white);
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+}
+
+.center-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1.center,
+h2.center,
+h3.center,
+h4.center,
+h5.center,
+h6.center,
+p.center {
+  text-align: center;
+}
+
+button,
+a.button {
+  box-sizing: border-box;
+  padding: 24px 48px;
+  width: 100%;
+  max-width: 20rem;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid var(--gray-2);
+  background: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  outline: none;
+}
+
+button.small,
+a.button.small {
+  padding: 8px 16px;
+  width: auto;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+
+button:active,
+a.button:active {
+  background-color: var(--gray-1);
+}
+
+button.disabled,
+a.button {
+  background-color: var(--gray-2) !important;
+  cursor: not-allowed;
+  color: var(--gray-1) !important;
+}
+
+button.purple,
+a.purple {
+  background: var(--purple-1);
+  border: none;
+  color: var(--white);
+}
+
+button.purple:active,
+a.purple:active {
+  background: var(--purple-2);
+  border: none;
+  color: var(--white);
+}
+
+button.purple:focus,
+a.purple:focus,
+button.green:focus,
+a.green:focus {
+  background: var(--gray-1);
+}
+
+button.white:focus,
+a.white:focus {
+  background: var(--gray-1);
+  color: var(--white) !important;
+}
+
+button.green,
+a.green {
+  background: var(--green-1);
+  border: none;
+  color: var(--white);
+}
+
+button.green:active,
+a.green:active {
+  background: var(--green-2);
+  border: none;
+  color: var(--white);
+}
+
+button.white,
+a.white {
+  background: var(--white);
+  border: none;
+}
+
+button.white.txt-green,
+a.white.txt-green {
+  color: var(--green-1);
+}
+
+button.white:active,
+a.white:active {
+  background: var(--gray-3);
+  border: none;
+}
+
+input {
+  margin: 16px 0;
+  border: 0;
+  border-bottom: 3px solid var(--purple-1);
+  background: none;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--purple-1);
+  outline: none;
+}
+
+input::placeholder {
+  color: var(--purple-1);
+  font-weight: normal;
+}
+
+input.centered {
+  text-align: center;
+}
+
+input.green {
+  border-bottom: 3px solid var(--green-1);
+  color: var(--green-1);
+}
+
+input.green::placeholder {
+  color: var(--green-1);
+  font-weight: normal;
+}
+
+input[disabled] {
+  border-bottom: 3px solid var(--gray-2) !important;
+  cursor: not-allowed;
+}
+
+div.formgroup {
+  display: flex;
+}
+
+div.formgroup input {
+  flex: 1;
+  margin-right: 16px;
+}
+
+div.card {
+  position: relative;
+  background-color: var(--white);
+  border-radius: 8px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  padding-bottom: 16px;
+}
+
+div.card > *:not(header) {
+  margin: 8px 24px;
+}
+
+div.card header {
+  top: 0;
+  width: 100%;
+  left: 0;
+  min-height: 64px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+div.card header * {
+  margin: 0 8px;
+}
+
+div.card header *:first-child {
+  margin-left: 16px;
+}
+
+div.card header.green {
+  background-color: var(--green-1);
+}
+
+ul.block {
+  padding: 16px 0;
+  margin: 0;
+}
+
+ul.block li {
+  list-style-type: none;
+  padding: 16px;
+}
+
+ul.block li.clickable {
+  cursor: pointer;
+}
+
+ul.block li.clickable:hover {
+  background: var(--gray-3);
+}
