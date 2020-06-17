@@ -41,10 +41,9 @@ pub fn tokenize(contents: String) -> Result<Vec<tokens::CSSToken>, error::ParseE
     let mut tokens: Vec<tokens::CSSToken> = Vec::new();
     let mut iter = contents.chars().peekable();
 
-    let mut done = false;
     let mut position = 0;
 
-    while !done {
+    loop {
         let result = parsers::parse(&mut iter, &mut position);
 
         // Go through the possible options
@@ -54,12 +53,17 @@ pub fn tokenize(contents: String) -> Result<Vec<tokens::CSSToken>, error::ParseE
 
             // If we're good then push the token onto the token list
             // However if EOF is reached end
-            Ok(result) => match result {
-                CSSToken::EOF => done = true,
-                _ => tokens.push(result),
-            },
+            Ok(result) => {
+                match result {
+                    CSSToken::EOF => break,
+                    _ => tokens.push(result),
+                };
+            }
         }
     }
+
+    // Add the EOF token from the end
+    tokens.push(CSSToken::EOF);
 
     Ok(tokens)
 }
