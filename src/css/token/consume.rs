@@ -303,12 +303,8 @@ pub fn number(
             }
         }
 
-        println!("{:?}", repr);
-
         // Convert the string to number and return with type
         let number = to_number(repr);
-
-        println!("{:?}", number);
 
         match number {
             Ok(num) => Ok((num, flag)),
