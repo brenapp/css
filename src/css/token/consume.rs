@@ -156,6 +156,8 @@ pub fn to_number(string: String) -> Result<f64, ParseFloatError> {
             // Advance the pointer and set sign
             s = -1.0;
             iter.next();
+        } else if equal(sign, &'+') {
+            iter.next();
         }
     };
 
@@ -177,9 +179,13 @@ pub fn to_number(string: String) -> Result<f64, ParseFloatError> {
     // Fraction digits
     let mut d = 0;
     let num = digits(&mut iter, &mut d);
-    let f: f64 = match num.parse::<f64>() {
-        Ok(parsed) => parsed,
-        Err(e) => return Err(e),
+    let f: f64 = if num.len() < 1 {
+        0.0
+    } else {
+        match num.parse::<f64>() {
+            Ok(parsed) => parsed,
+            Err(e) => return Err(e),
+        }
     };
 
     // Exponential Indicator
@@ -202,9 +208,13 @@ pub fn to_number(string: String) -> Result<f64, ParseFloatError> {
 
     // Exponent digits
     let num = digits(&mut iter, &mut d);
-    let e: f64 = match num.parse::<f64>() {
-        Ok(parsed) => parsed,
-        Err(e) => return Err(e),
+    let e: f64 = if num.len() < 1 {
+        0.0
+    } else {
+        match num.parse::<f64>() {
+            Ok(parsed) => parsed,
+            Err(e) => return Err(e),
+        }
     };
 
     // Create the number from the segments
@@ -223,26 +233,24 @@ pub fn number(
         // If there is a sign preceeding the number, add it to the string
         if ch == '+' || ch == '-' {
             repr.push(ch);
-
-            // Advance the pointer beyond the + -
-            *position += 1;
-            points.next();
         }
 
         // Consume digits if any and push them onto repr
         let string = digits(points, position);
         repr.push_str(string.as_str());
 
-        let peek = points.peek();
-
         // Check for decimals
-        if peek.is_some() && equal(peek.unwrap(), &'.') {
+        if next_char_equals(points, &'.') {
             let mut lookahead = points.clone();
             lookahead.next();
 
             // If we have digits after the decimal place
-            if let Some(char) = lookahead.next() {
-                if char.is_ascii_digit() {
+            if let Some(ch) = lookahead.next() {
+                if ch.is_ascii_digit() {
+                    // Consume the .
+                    *position += 1;
+                    repr.push(points.next().unwrap());
+
                     // Consume digits if any and push them onto repr
                     let string = digits(points, position);
                     repr.push_str(string.as_str());
@@ -277,6 +285,7 @@ pub fn number(
 
                             // Consume digits
                             // Consume digits if any and push them onto repr
+
                             let string = digits(points, position);
                             repr.push_str(string.as_str());
                         }
@@ -284,14 +293,22 @@ pub fn number(
 
                 // Otherwise, if the second is the ASCII digit, then consume digits to add to repr
                 } else if second.is_ascii_digit() {
+                    // Consume the e
+                    let e = points.next().unwrap();
+                    repr.push(e);
+
                     let string = digits(points, position);
                     repr.push_str(string.as_str());
                 }
             }
         }
 
+        println!("{:?}", repr);
+
         // Convert the string to number and return with type
         let number = to_number(repr);
+
+        println!("{:?}", number);
 
         match number {
             Ok(num) => Ok((num, flag)),
