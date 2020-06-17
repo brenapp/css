@@ -10,7 +10,7 @@ pub fn equal(a: &char, b: &char) -> bool {
     a.partial_cmp(b) == Some(Ordering::Equal)
 }
 
-pub fn next_char_equals(iter: &Peekable<Chars>, ch: &char) -> bool {
+pub fn next_char_equals(iter: &mut Peekable<Chars>, ch: &char) -> bool {
     let next = iter.peek();
 
     next.is_some() && equal(next.unwrap(), ch)

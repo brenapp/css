@@ -128,7 +128,7 @@ pub fn escape(points: &mut Peekable<Chars>, position: &mut i32) -> Result<char, 
 }
 
 // Consumes digits (convience method)
-fn digits(points: &Peekable<Chars>, position: &mut i32) -> String {
+fn digits(points: &mut Peekable<Chars>, position: &mut i32) -> String {
     let mut peek = points.peek();
     let mut repr = String::new();
 
@@ -147,7 +147,7 @@ fn digits(points: &Peekable<Chars>, position: &mut i32) -> String {
 
 // 4.3.13. Convert a string to a number
 pub fn to_number(string: String) -> Result<f64, ParseFloatError> {
-    let iter = string.chars().peekable();
+    let mut iter = string.chars().peekable();
 
     // Sign
     let mut s = 1.0;
@@ -160,7 +160,7 @@ pub fn to_number(string: String) -> Result<f64, ParseFloatError> {
     };
 
     // Digits
-    let num = digits(&iter, &mut 0);
+    let num = digits(&mut iter, &mut 0);
     let i: f64 = match num.parse::<f64>() {
         Ok(parsed) => parsed,
         Err(e) => return Err(e),
@@ -176,7 +176,7 @@ pub fn to_number(string: String) -> Result<f64, ParseFloatError> {
 
     // Fraction digits
     let mut d = 0;
-    let num = digits(&iter, &mut d);
+    let num = digits(&mut iter, &mut d);
     let f: f64 = match num.parse::<f64>() {
         Ok(parsed) => parsed,
         Err(e) => return Err(e),
@@ -202,7 +202,7 @@ pub fn to_number(string: String) -> Result<f64, ParseFloatError> {
 
     // Exponent digits
     let mut e = 0;
-    let num = digits(&iter, &mut d);
+    let num = digits(&mut iter, &mut d);
     let e: f64 = match num.parse::<f64>() {
         Ok(parsed) => parsed,
         Err(e) => return Err(e),
@@ -217,7 +217,7 @@ pub fn number(
     points: &mut Peekable<Chars>,
     position: &mut i32,
 ) -> Result<(f64, NumericFlag), ParseError> {
-    let flag = NumericFlag::Integer;
+    let mut flag = NumericFlag::Integer;
     let mut repr = String::new();
 
     if let Some(ch) = points.next() {

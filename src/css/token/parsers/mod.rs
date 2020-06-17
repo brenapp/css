@@ -1,6 +1,7 @@
 // Parsers
 pub mod comment;
 pub mod hash;
+pub mod plus;
 pub mod single_char;
 pub mod string;
 pub mod whitespace;
@@ -116,6 +117,22 @@ pub fn parse(iter: &mut Peekable<Chars>, position: &mut i32) -> Result<CSSToken,
     };
 
     // Plus symbol
+    match plus::parse(iter, position) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Comma Token
+    match single_char::parse(iter, position, ',', CSSToken::Comma) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
 
     // Check to see if we're at the end
     if iter.peek().is_none() {
