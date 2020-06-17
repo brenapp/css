@@ -1,4 +1,6 @@
 // Parsers
+pub mod at;
+pub mod backslash;
 pub mod comment;
 pub mod hash;
 pub mod lt;
@@ -9,6 +11,8 @@ pub mod single_char;
 pub mod string;
 pub mod whitespace;
 
+use super::check::is_name_start_code_point;
+use super::consume::{ident_like_token, numeric_token};
 use super::error::ParseError;
 use super::tokens::CSSToken;
 use std::cmp::Ordering;
@@ -179,15 +183,75 @@ pub fn parse(iter: &mut Peekable<Chars>, position: &mut i32) -> Result<CSSToken,
         },
     };
 
-    // Check to see if we're at the end
+    // Commerical At @
+    match at::parse(iter, position) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Left Square Bracket
+    match single_char::parse(iter, position, '[', CSSToken::LeftBracket) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Backlash \
+    match backslash::parse(iter, position) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Right Square Bracket ]
+    match single_char::parse(iter, position, ']', CSSToken::RightBracket) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Left Curly Brace
+    match single_char::parse(iter, position, '{', CSSToken::LeftBrace) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Right Curly Brace
+    match single_char::parse(iter, position, '}', CSSToken::RightBrace) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // EOF
     if iter.peek().is_none() {
         return Ok(CSSToken::EOF);
     }
 
-    // If none of the parse errors matched, then we have a parse error
-    Err(ParseError {
-        token: None,
-        error_text: "Unexpected token",
-        at: *position,
-    })
+    // Simpler matches
+    let ch = iter.peek().unwrap();
+
+    // Digit
+    if ch.is_ascii_digit() {
+        numeric_token(iter, position)
+    } else if is_name_start_code_point(*ch) {
+        ident_like_token(iter, position)
+    } else {
+        let ch = iter.next().unwrap();
+        Ok(CSSToken::Delim(ch))
+    }
 }
