@@ -1,6 +1,7 @@
 // Parsers
 pub mod comment;
 pub mod hash;
+pub mod minus;
 pub mod plus;
 pub mod single_char;
 pub mod string;
@@ -13,9 +14,6 @@ use std::iter::Peekable;
 use std::str::Chars;
 
 type ParseResult = Result<Option<CSSToken>, ParseError>;
-
-// Macro to consume an iterator and increment the position
-// TODO
 
 // Looks ahead for some chars returns true if they are there and false otherwise
 pub fn lookahead(iter: &mut Peekable<Chars>, chars: &[char]) -> bool {
@@ -127,6 +125,15 @@ pub fn parse(iter: &mut Peekable<Chars>, position: &mut i32) -> Result<CSSToken,
 
     // Comma Token
     match single_char::parse(iter, position, ',', CSSToken::Comma) {
+        Err(e) => return Err(e),
+        Ok(result) => match result {
+            Some(token) => return Ok(token),
+            None => (),
+        },
+    };
+
+    // Minus symbol
+    match minus::parse(iter, position) {
         Err(e) => return Err(e),
         Ok(result) => match result {
             Some(token) => return Ok(token),
