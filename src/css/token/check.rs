@@ -34,6 +34,42 @@ pub fn is_name_code_point(point: char) -> bool {
 }
 
 
+pub const MAX_CODE_POINT: u32 = 0x10FFFF;
+
+pub fn is_surrogate(num: u32) -> bool {
+    0xD800 <= num && num <= 0xDFFF
+}
+
+pub fn is_nonprintable(ch: &char) -> bool {
+    let code = *ch as u32;
+
+    // A code point between U+0000 NULL and U+0008 BACKSPACE inclusive
+    code <= 0x008 ||
+
+    // U+000B LINE TABULATION
+    code == 0x000B ||
+
+    // code point between U+000E SHIFT OUT and U+001F INFORMATION SEPARATOR ONE
+    code >= 0x000E && code <= 0x001F ||
+
+    // or U+007F DELETE
+    code == 0x007F
+
+
+}
+
+
+pub fn is_whitespace(ch: &char) -> bool {
+    // U+000A LINE FEED
+    ch.partial_cmp(&'\n') == Some(Ordering::Equal) || 
+    
+    // U+0009 CHARACTER TABULATION
+    ch.partial_cmp(&' ') == Some(Ordering::Equal) ||
+
+    // U+0020 SPACE
+    ch.partial_cmp(&' ') == Some(Ordering::Equal)
+}
+
 
 // 4.3.8. Check if two code points are a valid escape
 pub fn is_valid_escape(points: &mut Peekable<Chars>) -> bool {
@@ -179,19 +215,3 @@ pub fn is_number(points: &mut Peekable<Chars>) -> bool {
 
 }
 
-pub const MAX_CODE_POINT: u32 = 0x10FFFF;
-
-pub fn is_surrogate(num: u32) -> bool {
-    0xD800 <= num && num <= 0xDFFF
-}
-
-pub fn is_whitespace(ch: &char) -> bool {
-    // U+000A LINE FEED
-    ch.partial_cmp(&'\n') == Some(Ordering::Equal) || 
-    
-    // U+0009 CHARACTER TABULATION
-    ch.partial_cmp(&' ') == Some(Ordering::Equal) ||
-
-    // U+0020 SPACE
-    ch.partial_cmp(&' ') == Some(Ordering::Equal)
-}
