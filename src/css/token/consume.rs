@@ -67,7 +67,7 @@ pub fn escape(points: &mut Peekable<Chars>, position: &mut i32) -> Result<char, 
         hex.push(ch);
 
         // Collect the remaining digits
-        for i in 0..5 {
+        for _ in 0..5 {
             let next = points.peek();
 
             if next.is_none() {
@@ -201,7 +201,6 @@ pub fn to_number(string: String) -> Result<f64, ParseFloatError> {
     };
 
     // Exponent digits
-    let mut e = 0;
     let num = digits(&mut iter, &mut d);
     let e: f64 = match num.parse::<f64>() {
         Ok(parsed) => parsed,
@@ -296,7 +295,7 @@ pub fn number(
 
         match number {
             Ok(num) => Ok((num, flag)),
-            Err(e) => Err(ParseError {
+            Err(_) => Err(ParseError {
                 token: None,
                 at: *position,
                 error_text: "Could not parse number",
