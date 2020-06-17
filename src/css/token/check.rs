@@ -6,6 +6,16 @@ use std::cmp::Ordering;
 use std::iter::Peekable;
 use std::str::Chars;
 
+pub fn equal(a: &char, b: &char) -> bool {
+    a.partial_cmp(b) == Some(Ordering::Equal)
+}
+
+pub fn next_char_equals(iter: &Peekable<Chars>, ch: &char) -> bool {
+    let next = iter.peek();
+
+    next.is_some() && equal(next.unwrap(), ch)
+}
+
  pub fn is_name_start_code_point(point: char) -> bool {
     point.is_ascii_alphabetic() || // letter
     point as u32 > 0x0080 || // non-ASCII code point
@@ -23,12 +33,14 @@ pub fn is_name_code_point(point: char) -> bool {
     point == '-'
 }
 
+
+
 // 4.3.8. Check if two code points are a valid escape
 pub fn is_valid_escape(points: &mut Peekable<Chars>) -> bool {
     
     if let Some(ch) = points.peek() {
 
-        if ch.partial_cmp(&'\\') == Some(Ordering::Equal) {
+        if equal(ch, &'\\') {
 
             // Clone to prevent consuming points in the main stream
             let mut points = points.clone();
@@ -40,7 +52,7 @@ pub fn is_valid_escape(points: &mut Peekable<Chars>) -> bool {
             if let Some(ch) = points.peek() {
 
                 // If it's a not newline it's a valid escape
-                ch.partial_cmp(&'\n') != Some(Ordering::Equal)
+                !equal(ch, &'\n')
     
             } else {
                 false
@@ -70,7 +82,7 @@ pub fn is_identifier(points: &mut Peekable<Chars>) -> bool {
         // Valid identifier starts
 
         // U+002D HYPHEN-MINUS
-        if ch.partial_cmp(&'-') == Some(Ordering::Equal) {
+        if equal(ch, &'-') {
 
             // Now we have to clone the points to avoid consuming anything from the main stream
             let mut points = points.clone();
@@ -94,7 +106,7 @@ pub fn is_identifier(points: &mut Peekable<Chars>) -> bool {
 
         } else if is_name_start_code_point(*ch) {
             true
-        } else if ch.partial_cmp(&'\\') == Some(Ordering::Equal) {
+        } else if equal(ch, &'\\') {
             is_valid_escape(points)
         } else {
             false
@@ -104,6 +116,67 @@ pub fn is_identifier(points: &mut Peekable<Chars>) -> bool {
     } else {
         false
     }
+}
+
+// 4.3.10. Check if three code points would start a number
+pub fn is_number(points: &mut Peekable<Chars>) -> bool {
+
+    // Lets look at the first digit to determine if we need to clone
+    if let Some(ch) = points.peek() {
+
+        // U+002B PLUS SIGN (+)
+        // U+002D HYPHEN-MINUS (-)
+        if equal(ch, &'+') || equal(ch, &'+') { 
+
+            // Clone points and advance to check the second
+            let mut points = points.clone();
+            points.next();
+
+
+            if let Some(second) = points.next() {
+
+                // If the second character is a digit, then we're good (like +4)
+                if second.is_ascii_digit() {
+                    true
+
+                // If it's a digit, then it's a number if the third char is a digit (like -.4) 
+                } else if second == '.' {
+
+                    if let Some(third) = points.next() {
+                        third.is_ascii_digit()
+                    } else {
+                        false
+                    }
+
+                } else {
+                    false
+                }
+
+            // Second char EOF    
+            } else {
+                false
+            }
+
+        // U+002E FULL STOP (.)
+        } else if equal(ch, &'.') {
+
+            // If it starts with a . the second char needs to be a digit (like .4)
+            if let Some(second) = points.next() {
+                second.is_ascii_digit()
+            } else {
+                false
+            }
+
+        // Now it's only a number if it starts with a digit (like 4)
+        } else {
+            ch.is_ascii_digit()
+        }
+
+    // First char EOF
+    } else {
+        false
+    }
+
 }
 
 pub const MAX_CODE_POINT: u32 = 0x10FFFF;
