@@ -395,76 +395,62 @@ pub fn url_token(points: &mut Peekable<Chars>, position: &mut i32) -> Result<CSS
     // Consume as much whitespace as possible
     whitespace(points, position);
 
-    // Repeatedly consume the next input
+    // Repeatedly consume the next input code point from the stream
     loop {
+        *position += 1;
         let next = points.next();
 
         match next {
-            Some(ch) => {
-                // If it's whitespace, consume as much whitespace as possible
-                if is_whitespace(&ch) {
-                    whitespace(points, position);
-
-                    // If the next input code point is U+0029 RIGHT PARENTHESIS ()) or EOF, consume it and return the <url-token>
-                    let next = points.peek();
-
-                    if next.is_none() {
-                        // Consume it
-                        *position += 1;
-                        points.next();
-
-                        return Err(ParseError {
-                            token: Some(CSSToken::URL(string)),
-                            at: *position,
-                            error_text: "Unexpected End of File (EOF)",
-                        });
-                    }
-
-                    // If it's ) then return the URL token, else return the BadURL token
-                    let ch = next.unwrap();
-                    if equal(ch, &')') {
-                        // Consume then )
-                        *position += 1;
-                        points.next();
-
-                        return Ok(CSSToken::URL(string));
-                    // We are now in a bad URL
-                    } else {
-                        bad_url_remnant(points, position);
-                        return Ok(CSSToken::BadURL);
-                    }
-
-                // These characters indicate bad URL
-                } else if ch == '"' || ch == '\'' || ch == '(' || is_nonprintable(&ch) {
-                    bad_url_remnant(points, position);
-                    return Ok(CSSToken::BadURL);
-
-                // For \, check if it's a valid escape, and if so, use it
-                // Otherwise it's a BadDURL
-                } else if ch == '\\' {
-                    // Check if it's a valid escape
-                    if is_valid_escape(points) {
-                        match escape(points, position) {
-                            Ok(ch) => string.push(ch),
-                            Err(e) => return Err(e),
-                        }
-                    } else {
-                        bad_url_remnant(points, position);
-                        return Ok(CSSToken::BadURL);
-                    }
-
-                // Append anything else
-                } else {
-                    string.push(ch);
-                }
-            }
-            // Handle EOF
+            // EOF is a parse error
             None => {
                 return Err(ParseError {
                     token: Some(CSSToken::URL(string)),
                     at: *position,
                     error_text: "Unexpected End of File (EOF)",
                 })
+            }
+
+            Some(ch) => {
+                // If the character is ), close the URL
+                if ch == ')' {
+                    return Ok(CSSToken::URL(string));
+
+                // If it's whitespace, consume as much whitespace as possible
+                } else if is_whitespace(&ch) {
+                    whitespace(points, position);
+
+                // These characters indicate a bad URL
+                } else if ch == '"' || ch == '\'' || ch == '(' || is_nonprintable(&ch) {
+                    // Consume the remnants of the bad url and return a token
+                    bad_url_remnant(points, position);
+
+                    return Err(ParseError {
+                        error_text: "Bad URL detected",
+                        at: *position,
+                        token: Some(CSSToken::BadURL),
+                    });
+
+                // Check and account for valid escapes
+                } else if ch == '\\' {
+                    if is_valid_escape(points) {
+                        match escape(points, position) {
+                            Ok(ch) => string.push(ch),
+                            Err(e) => return Err(e),
+                        }
+
+                    // If it's not a valid escape, this is a Bad URL
+                    } else {
+                        bad_url_remnant(points, position);
+
+                        return Err(ParseError {
+                            error_text: "Bad URL detected",
+                            at: *position,
+                            token: Some(CSSToken::BadURL),
+                        });
+                    }
+                } else {
+                    string.push(ch);
+                }
             }
         }
     }
