@@ -106,7 +106,7 @@ pub fn is_valid_escape(points: &mut Peekable<Chars>) -> bool {
 
 }
 
-//4.3.9. Check if three code points would start an identifier (Look ahead, consumes nothing)
+// 4.3.9. Check if three code points would start an identifier (Look ahead, consumes nothing)
 pub fn is_identifier(points: &mut Peekable<Chars>) -> bool {
 
     // Because this algorithm is not allowed to consume any additional code points, we need to clone the iterator here

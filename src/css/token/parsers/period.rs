@@ -23,10 +23,7 @@ pub fn parse(points: &mut Peekable<Chars>, position: &mut i32) -> ParseResult {
 
         // Otherwise return a delimiter
         } else {
-            *position += 1;
-            let period = points.next().unwrap();
-
-            Ok(Some(CSSToken::Delim(period)))
+            Ok(Some(CSSToken::Delim('.')))
         }
     } else {
         Ok(None)
