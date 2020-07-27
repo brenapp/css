@@ -1,4 +1,4 @@
-# Minify CSS
+# CSS
 
 An easy-to-follow CSS parser and minifier written in rust.
 
