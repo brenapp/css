@@ -10,7 +10,7 @@ pub fn css(file: &str) -> Result<(), Error> {
         Err(e) => return Err(e),
     };
 
-    let optimized = match css::optimize(contents) {
+    let optimized = match css::minimize(contents) {
         Ok(opt) => opt,
         Err(e) => {
             eprintln!("Error parsing file {}!", file);

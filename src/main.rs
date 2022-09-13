@@ -2,7 +2,7 @@ use std::env;
 use std::process;
 
 mod css;
-mod optimize;
+mod minimize;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -35,7 +35,7 @@ fn main() {
 
         // Handle files by ext
         let result = match ext {
-            "css" => optimize::css(file),
+            "css" => minimize::css(file),
             _ => {
                 eprintln!(
                     "Invalid file extension in \"{}\". Make sure passed files has the .css extension.",

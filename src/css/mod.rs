@@ -1,14 +1,17 @@
 pub mod token;
 use std::string::String;
 
-pub fn optimize(contents: String) -> Result<String, token::error::ParseError> {
+pub fn minimize(contents: String) -> Result<String, token::error::ParseError> {
     let tokens = match token::tokenize(contents) {
         Ok(tokens) => tokens,
         Err(e) => return Err(e),
     };
 
-    println!("{:?}", tokens);
+    let string = tokens
+        .iter()
+        .map(|token| token.to_string())
+        .collect::<Vec<String>>()
+        .join("");
 
-
-    Ok(String::new())
+    Ok(string)
 }
