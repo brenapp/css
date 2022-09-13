@@ -3,6 +3,18 @@
 
 An easy-to-follow CSS parser and minifier written in Rust, with no dependancies! This module takes a CSS file as input, will tokenize and parse the source code for parse errors, and output a parallel `.min.css` file with a minified source graph.
 
+Run using cargo:
+
+```
+cargo run file.css
+```
+
+Alternatively, to produce a static executable, use `cargo build`:
+
+```
+cargo build --release
+```
+
 Consider the following `main.css` file:
 ```css
 .App-Header {
